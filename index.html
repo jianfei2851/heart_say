@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>心语通</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+      color: #333;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 10px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 10px;
+      height: calc(100vh - 20px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      padding: 10px 15px;
+      background: linear-gradient(to right, #4a6fa5, #3c5a87);
+      color: white;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin: 0;
+      flex-grow: 1;
+    }
+
+    .settings-btn {
+      background: linear-gradient(to bottom, #ff9800, #f57c00);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      flex-shrink: 0;
+      margin-left: 15px;
+    }
+
+    .settings-btn:hover {
+      background: linear-gradient(to bottom, #f57c00, #e65100);
+      transform: rotate(30deg);
+    }
+
+    .subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-top: 3px;
+    }
+
+    .yes-no-section {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .yes-btn, .no-btn {
+      flex: 1;
+      padding: 30px;
+      font-size: 32px;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+    }
+
+    .yes-btn {
+      background: linear-gradient(to bottom, #4CAF50, #388E3C);
+    }
+
+    .no-btn {
+      background: linear-gradient(to bottom, #f44336, #d32f2f);
+    }
+
+    .yes-btn:hover {
+      background: linear-gradient(to bottom, #43A047, #2E7D32);
+      transform: translateY(-4px);
+    }
+
+    .no-btn:hover {
+      background: linear-gradient(to bottom, #e53935, #c62828);
+      transform: translateY(-4px);
+    }
+
+    .display-area {
+      background-color: white;
+      border: 3px solid #4a6fa5;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 15px;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      text-align: center;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .display-text {
+      max-width: 100%;
+      word-wrap: break-word;
+    }
+
+    .phrases {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 15px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .phrase-btn {
+      padding: 20px 10px;
+      font-size: 26px; /* 增大字体 */
+      background: linear-gradient(to bottom, #7ba0c0, #5e729c);
+      color: white;
+      border: 3px solid #4a6fa5; /* 增加边框更醒目 */
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      font-weight: bold; /* 加粗文字 */
+    }
+
+    .phrase-btn:hover {
+      background: linear-gradient(to bottom, #6a90b0, #4a6fa5);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+
+    .phrase-btn.speaking {
+      background: linear-gradient(to bottom, #ff8c8c, #ff6b6b);
+      animation: pulse 1s infinite;
+      transform: translateY(-3px);
+    }
+
+    .phrase-btn.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1) translateY(-3px); }
+      50% { transform: scale(1.05) translateY(-5px); }
+      100% { transform: scale(1) translateY(-3px); }
+    }
+
+    /* 弹出窗口样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 25px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 32px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #aaa;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .close-modal:hover {
+      color: #000;
+      background-color: #f0f0f0;
+    }
+
+    .modal-title {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+    }
+
+    .add-section {
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .add-input {
+      width: 100%;
+      padding: 18px;
+      font-size: 20px;
+      border: 3px solid #4a6fa5;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+
+    .add-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 22px;
+      cursor: pointer;
+      width: 100%;
+      height: 65px;
+    }
+
+    .add-btn:hover {
+      background-color: #43A047;
+    }
+
+    .manage-section {
+      margin-top: 20px;
+    }
+
+    .manage-title {
+      font-size: 22px;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .phrase-list {
+      max-height: 350px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+
+    .phrase-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+    }
+
+    .phrase-text {
+      font-size: 20px;
+      flex-grow: 1;
+      padding-right: 15px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .move-up-btn, .move-down-btn, .delete-btn {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 16px;
+      height: 45px;
+      width: 60px;
+      min-width: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-btn {
+      background-color: #f44336;
+    }
+
+    .move-up-btn:hover, .move-down-btn:hover {
+      background-color: #0b7dda;
+    }
+
+    .delete-btn:hover {
+      background-color: #d32f2f;
+    }
+
+    /* 消息对话框 */
+    .message-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.6);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .message-content {
+      background-color: white;
+      padding: 35px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 450px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .message-text {
+      font-size: 26px;
+      margin-bottom: 25px;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .message-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .message-btn {
+      flex: 1;
+      padding: 22px;
+      font-size: 22px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      min-height: 65px;
+    }
+
+    .ok-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .ok-btn:hover {
+      background-color: #43A047;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    /* 平板优化 */
+    @media (max-width: 1200px) {
+      .phrases {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .phrases {
+        grid-template-columns: 1fr;
+      }
+
+      .yes-no-section {
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .yes-btn, .no-btn {
+        padding: 22px;
+        font-size: 26px;
+      }
+
+      .phrase-btn {
+        padding: 18px 8px;
+        font-size: 24px; /* 在小屏幕上适当减小字体 */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>心语通</h1>
+      <button class="settings-btn" id="settingsBtn">⚙️</button>
+    </header>
+
+    <div class="subtitle">专为不能说话的老人设计的沟通工具</div>
+
+    <div class="display-area">
+      <div class="display-text" id="displayText">请点击按钮进行沟通...</div>
+    </div>
+
+    <div class="yes-no-section">
+      <button class="yes-btn" id="yesBtn">是</button>
+      <button class="no-btn" id="noBtn">不是</button>
+    </div>
+
+    <div class="phrases" id="phrasesContainer">
+      <!-- 常用短语按钮将通过JavaScript动态加载 -->
+    </div>
+
+    <footer>
+      <p>心语通 - 让沟通无障碍</p>
+    </footer>
+  </div>
+
+  <!-- 设置弹出窗口 -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal">&times;</span>
+      <h2 class="modal-title">设置常用语</h2>
+
+      <div class="add-section">
+        <h3 class="manage-title">添加新短语</h3>
+        <input type="text" class="add-input" id="newPhraseInput" placeholder="输入新短语...">
+        <button class="add-btn" id="addPhraseBtn">添加短语</button>
+      </div>
+
+      <div class="manage-section">
+        <h3 class="manage-title">管理现有短语</h3>
+        <p style="font-size: 16px; margin-bottom: 15px;">可以调整短语顺序，或删除不需要的短语</p>
+        <div class="phrase-list" id="phraseList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 消息提示对话框 -->
+  <div id="messageModal" class="message-modal">
+    <div class="message-content">
+      <div class="message-text" id="messageText">提示信息</div>
+      <div class="message-buttons">
+        <button class="message-btn ok-btn" id="messageOk">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 从localStorage加载常用短语，如果没有则使用默认值
+    const defaultPhrases = [
+      '我饿了', '我渴了', '我累了', '我想上厕所',
+      '请帮我倒水', '请扶我起来', '我需要休息', '请帮我拿东西',
+      '我很开心', '我有点难过', '我感到孤独', '谢谢您',
+      '我头疼', '我肚子疼', '我需要吃药', '我感觉不舒服',
+      '你好', '再见', '请坐', '不客气'
+    ];
+
+    let phrases = JSON.parse(localStorage.getItem('customPhrases')) || [...defaultPhrases];
+    let phraseToDeleteIndex = null;
+
+    // 语音相关变量
+    let currentUtterance = null;
+    let isProcessing = false; // 标记是否正在处理语音
+    let lastPhraseSpoken = null; // 记录上次播放的短语
+    let lastSpokenTime = 0; // 记录上次播放的时间
+    let isCancelled = false; // 标记是否被手动取消
+
+    // 显示短语
+    function showPhrases() {
+      const container = document.getElementById('phrasesContainer');
+      container.innerHTML = '';
+
+      phrases.forEach(phrase => {
+        const button = document.createElement('button');
+        button.className = 'phrase-btn';
+        button.textContent = phrase;
+        button.onclick = () => speakPhrase(phrase);
+        container.appendChild(button);
+      });
+    }
+
+    // 更新短语列表显示
+    function updatePhraseList() {
+      const listContainer = document.getElementById('phraseList');
+      listContainer.innerHTML = '';
+
+      phrases.forEach((phrase, index) => {
+        const item = document.createElement('div');
+        item.className = 'phrase-item';
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'phrase-text';
+        textSpan.textContent = phrase;
+
+        const actionButtons = document.createElement('div');
+        actionButtons.className = 'action-buttons';
+
+        // 上移按钮
+        const moveUpBtn = document.createElement('button');
+        moveUpBtn.className = 'move-up-btn';
+        moveUpBtn.innerHTML = '↑';
+        moveUpBtn.title = '向上移动';
+        moveUpBtn.onclick = () => movePhraseUp(index);
+
+        // 下移按钮
+        const moveDownBtn = document.createElement('button');
+        moveDownBtn.className = 'move-down-btn';
+        moveDownBtn.innerHTML = '↓';
+        moveDownBtn.title = '向下移动';
+        moveDownBtn.onclick = () => movePhraseDown(index);
+
+        // 删除按钮
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = '×';
+        deleteBtn.title = '删除';
+        deleteBtn.onclick = () => showConfirmationDialog(index, phrase);
+
+        actionButtons.appendChild(moveUpBtn);
+        actionButtons.appendChild(moveDownBtn);
+        actionButtons.appendChild(deleteBtn);
+
+        item.appendChild(textSpan);
+        item.appendChild(actionButtons);
+        listContainer.appendChild(item);
+      });
+    }
+
+    // 向上移动短语
+    function movePhraseUp(index) {
+      if (index > 0) {
+        // 交换位置
+        [phrases[index], phrases[index - 1]] = [phrases[index - 1], phrases[index]];
+        localStorage.setItem('customPhrases', JSON.stringify(phrases));
+        updatePhraseList(); // 更新设置窗口中的列表
+        showPhrases(); // 更新主界面的短语
+      }
+    }
+
+    // 向下移动短语
+    function movePhraseDown(index) {
+      if (index < phrases.length - 1) {
+        // 交换位置
+        [phrases[index], phrases[index + 1]] = [phrases[index + 1], phrases[index]];
+        localStorage.setItem('customPhrases', JSON.stringify(phrases));
+        updatePhraseList(); // 更新设置窗口中的列表
+        showPhrases(); // 更新主界面的短语
+      }
+    }
+
+    // 显示确认对话框
+    function showConfirmationDialog(index, phrase) {
+      phraseToDeleteIndex = index;
+      document.getElementById('messageText').textContent = `确定要删除 "${phrase}" 吗？`;
+
+      // 修改按钮布局为"确定"和"取消"
+      document.querySelector('.message-buttons').innerHTML = `
+        <button class="message-btn" style="background-color: #f44336; color: white;" id="confirmDelete">确定</button>
+        <button class="message-btn ok-btn" id="cancelDelete">取消</button>
+      `;
+
+      document.getElementById('messageModal').style.display = 'flex';
+
+      // 重新绑定事件
+      document.getElementById('confirmDelete').onclick = confirmDeletion;
+      document.getElementById('cancelDelete').onclick = cancelDeletion;
+    }
+
+    // 显示一般消息对话框
+    function showMessage(message) {
+      document.getElementById('messageText').textContent = message;
+
+      // 修改为只有一个"确定"按钮
+      document.querySelector('.message-buttons').innerHTML = `
+        <button class="message-btn ok-btn" id="messageOk">确定</button>
+      `;
+
+      document.getElementById('messageModal').style.display = 'flex';
+
+      // 重新绑定事件
+      document.getElementById('messageOk').onclick = hideMessageDialog;
+    }
+
+    // 确认删除
+    function confirmDeletion() {
+      if (phraseToDeleteIndex !== null && phraseToDeleteIndex >= 0) {
+        phrases.splice(phraseToDeleteIndex, 1); // 从数组中删除指定索引的元素
+        localStorage.setItem('customPhrases', JSON.stringify(phrases));
+        showPhrases();
+        updatePhraseList(); // 更新设置窗口中的列表
+        hideMessageDialog();
+        showMessage('短语删除成功！');
+      }
+    }
+
+    // 取消删除
+    function cancelDeletion() {
+      phraseToDeleteIndex = null;
+      hideMessageDialog();
+    }
+
+    // 隐藏消息对话框
+    function hideMessageDialog() {
+      document.getElementById('messageModal').style.display = 'none';
+    }
+
+    // 语音播放函数
+    function speakPhrase(text) {
+      // 获取所有短语按钮
+      const buttons = document.querySelectorAll('.phrase-btn');
+
+      // 检查是否在1秒内重复点击同一个短语
+      const now = Date.now();
+      if (text === lastPhraseSpoken && (now - lastSpokenTime) < 1000) {
+        return; // 如果是1秒内的重复点击，直接返回
+      }
+
+      lastPhraseSpoken = text;
+      lastSpokenTime = now;
+
+      // 如果正在处理语音，取消当前语音并开始新的语音
+      if (currentUtterance && speechSynthesis.speaking) {
+        isCancelled = true; // 标记为手动取消
+        speechSynthesis.cancel();
+      } else {
+        isCancelled = false; // 未取消
+      }
+
+      // 更新显示区域
+      const displayText = document.getElementById('displayText');
+      displayText.textContent = text;
+
+      // 找到当前按钮并添加 speaking 和 disabled 类
+      buttons.forEach(btn => {
+        if (btn.textContent === text) {
+          btn.classList.add('speaking');
+          btn.classList.add('disabled'); // 禁用按钮
+        } else {
+          btn.classList.remove('speaking');
+          btn.classList.remove('disabled'); // 启用其他按钮
+        }
+      });
+
+      // 创建新的语音合成实例
+      currentUtterance = new SpeechSynthesisUtterance(text);
+
+      // 尝试使用中文语音
+      const voices = speechSynthesis.getVoices();
+      const chineseVoice = voices.find(voice =>
+        voice.lang.includes('zh') || voice.lang.includes('Chinese')
+      );
+
+      if (chineseVoice) {
+        currentUtterance.voice = chineseVoice;
+      }
+      currentUtterance.lang = 'zh-CN';
+      currentUtterance.rate = 0.9; // 稍微慢一点，更清晰
+      currentUtterance.pitch = 1.0;
+      currentUtterance.volume = 1.0;
+
+      // 播放完成后重置按钮状态
+      currentUtterance.onend = () => {
+        if (!isCancelled) { // 只有非手动取消的情况下才重置
+          buttons.forEach(btn => {
+            btn.classList.remove('speaking');
+            btn.classList.remove('disabled');
+          });
+        }
+      };
+
+      // 错误处理 - 仅处理真正的错误，忽略取消操作
+      currentUtterance.onerror = (event) => {
+        // 如果是手动取消，则不显示错误信息
+        if (!isCancelled) {
+          console.error('语音合成出错:', event);
+          buttons.forEach(btn => {
+            btn.classList.remove('speaking');
+            btn.classList.remove('disabled');
+          });
+          showMessage('语音合成出错');
+        } else {
+          // 重置状态但不显示错误消息
+          buttons.forEach(btn => {
+            btn.classList.remove('speaking');
+            btn.classList.remove('disabled');
+          });
+        }
+      };
+
+      // 监听取消操作
+      currentUtterance.onend = () => {
+        if (!isCancelled) { // 只有非手动取消的情况下才重置
+          buttons.forEach(btn => {
+            btn.classList.remove('speaking');
+            btn.classList.remove('disabled');
+          });
+        } else {
+          // 重置取消标志
+          isCancelled = false;
+          buttons.forEach(btn => {
+            if (btn.textContent === text) {
+              btn.classList.remove('speaking');
+              btn.classList.remove('disabled');
+            }
+          });
+        }
+      };
+
+      speechSynthesis.speak(currentUtterance);
+    }
+
+    // 添加新短语
+    function addPhrase() {
+      const input = document.getElementById('newPhraseInput');
+      const text = input.value.trim();
+
+      if (text && !phrases.includes(text)) {
+        phrases.push(text);
+        localStorage.setItem('customPhrases', JSON.stringify(phrases));
+        input.value = '';
+        showPhrases();
+        updatePhraseList(); // 更新设置窗口中的列表
+        showMessage('短语添加成功！');
+      } else if (phrases.includes(text)) {
+        showMessage('该短语已存在！');
+      } else {
+        showMessage('请输入短语内容');
+      }
+    }
+
+    // 初始化应用
+    document.addEventListener('DOMContentLoaded', () => {
+      // 等待语音API初始化
+      if ('speechSynthesis' in window) {
+        // 确保语音API完全加载后再显示可用声音
+        speechSynthesis.onvoiceschanged = function() {
+          console.log('语音系统就绪');
+        };
+      } else {
+        showMessage('您的浏览器不支持语音合成功能，请尝试使用最新版Chrome、Edge或Firefox浏览器');
+      }
+
+      // 显示短语
+      showPhrases();
+
+      // "是"按钮事件
+      document.getElementById('yesBtn').addEventListener('click', () => {
+        speakPhrase('是');
+      });
+
+      // "不是"按钮事件
+      document.getElementById('noBtn').addEventListener('click', () => {
+        speakPhrase('不是');
+      });
+
+      // 设置按钮事件
+      document.getElementById('settingsBtn').addEventListener('click', () => {
+        document.getElementById('settingsModal').style.display = 'flex';
+        updatePhraseList(); // 打开窗口时更新列表
+      });
+
+      // 关闭设置模态窗口
+      document.getElementById('closeModal').addEventListener('click', () => {
+        document.getElementById('settingsModal').style.display = 'none';
+      });
+
+      // 点击设置模态窗口外部关闭
+      window.addEventListener('click', (event) => {
+        const modal = document.getElementById('settingsModal');
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+
+      // 添加按钮事件
+      document.getElementById('addPhraseBtn').addEventListener('click', addPhrase);
+
+      // 输入框回车事件
+      document.getElementById('newPhraseInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          addPhrase();
+        }
+      });
+
+      // 确定按钮事件（用于消息框）
+      document.getElementById('messageOk').addEventListener('click', hideMessageDialog);
+
+      // 点击消息对话框外部关闭
+      document.getElementById('messageModal').addEventListener('click', (event) => {
+        if (event.target.id === 'messageModal') {
+          hideMessageDialog();
+        }
+      });
+
+      // 页面可见性变化时处理语音播放
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          // 页面不可见时暂停语音，防止后台运行
+          speechSynthesis.pause();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
